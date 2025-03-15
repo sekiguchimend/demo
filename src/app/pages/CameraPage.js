@@ -1089,11 +1089,13 @@ const CameraPage = () => {
       {mode === 'camera' && showFilters && (
         <div className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 text-white p-4 rounded-t-2xl z-20 max-h-[70vh] overflow-y-auto filter-panel">
           <div className="max-w-screen-md mx-auto">
+         
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Settings size={20} className="text-purple-400" />
                 フィルター設定
               </h2>
+          
               <button 
                 onClick={resetFilters}
                 className="text-purple-400 flex items-center gap-1 hover:text-purple-300 transition"
@@ -1101,6 +1103,12 @@ const CameraPage = () => {
                 <RefreshCw size={16} />
                 リセット
               </button>
+              <button 
+        onClick={() => setShowFilters(false)}
+        className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-1 rounded-md text-sm font-medium camera-btn"
+      >
+        閉じる
+      </button>
             </div>
             
             {/* フィルタープリセット */}
@@ -1308,14 +1316,10 @@ const CameraPage = () => {
                   className="w-full"
                 />
               </div>
+              
             </div>
             
-            <button 
-              onClick={() => setShowFilters(false)}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg mt-8 font-medium camera-btn"
-            >
-              完了
-            </button>
+           
           </div>
         </div>
       )}
