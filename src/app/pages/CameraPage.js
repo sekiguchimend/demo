@@ -1,6 +1,6 @@
-// pages/CameraPage.js - パート1：インポートとステート設定
+// pages/CameraPage.js - 洗練されたデザイン
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Settings, RefreshCw, Image, Zap, Layers, Palette, FlipHorizontal, CameraOff, ChevronLeft, Heart, MessageCircle, Share2, Bookmark, Smile, Home } from 'lucide-react';
+import { Camera, Settings, RefreshCw, Image, Zap, Layers, Palette, FlipHorizontal, CameraOff, ChevronLeft, Heart, MessageCircle, Share2, Bookmark, Smile, Home, Search } from 'lucide-react';
 import Link from 'next/link';
 
 const CameraPage = () => {
@@ -101,7 +101,7 @@ const CameraPage = () => {
     };
   }, [stream]);
   
-  // videoElementが更新されたときにカメラを再接続（マウント後の初回のみ）
+  // videoElementが更新されたときにカメラを再接続
   useEffect(() => {
     let isMounted = true;
     
@@ -125,7 +125,6 @@ const CameraPage = () => {
       isMounted = false;
     };
   }, [videoElement, mode]);
-  // pages/CameraPage.js - パート2：関数と機能実装
 
   // カメラの起動
   const startCamera = async () => {
@@ -459,6 +458,29 @@ const CameraPage = () => {
 
   // グラデーションフィルターのCSSスタイル
   const gradientStyles = `
+    /* ベースの共通スタイル */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    /* アニメーション */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* 改良されたグラデーションフィルター */
     .rainbow-gradient::after {
       content: '';
       position: absolute;
@@ -523,33 +545,119 @@ const CameraPage = () => {
       mix-blend-mode: overlay;
       border-radius: 0.5rem;
     }
+    
+    /* スタイリッシュなボタン */
+    .camera-btn {
+      transition: all 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    }
+    
+    .camera-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* カスタムスライダー */
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 4px;
+      background: rgba(139, 92, 246, 0.2);
+      border-radius: 5px;
+      background-image: linear-gradient(to right, #8b5cf6, #6366f1);
+      background-size: 50% 100%;
+      background-repeat: no-repeat;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.2), 0 3px 5px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+    
+    /* フィルターパネルのスタイル強化 */
+    .filter-panel {
+      backdrop-filter: blur(10px);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    /* カメラインターフェース */
+    .camera-interface {
+      background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.07), transparent 70%),
+                radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.05), transparent 70%);
+    }
+    
+    /* フィード投稿のスタイル強化 */
+    .feed-post {
+      transition: transform 0.2s ease;
+      animation: fadeIn 0.5s ease-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feed-post:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* スタイリッシュなヘッダー */
+    .styled-header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    
+    /* アクションボタン */
+    .action-button {
+      transition: all 0.2s ease;
+    }
+    
+    .action-button:hover {
+      transform: scale(1.05);
+    }
+    
+    .action-button:active {
+      transform: scale(0.95);
+    }
   `;
-  // pages/CameraPage.js - パート3：レンダリング部分
 
   return (
-    <div className="bg-gray-100" style={{ height: "100vh", overflow: "auto" }}>
+    <div className="bg-gray-50 camera-interface" style={{ height: "100vh", overflow: "auto" }}>
       <style>{gradientStyles}</style>
       
       {/* ヘッダー */}
-      <header className="bg-white border-b border-gray-200 py-2 px-4 sticky top-0 z-10">
+      <header className="styled-header border-b border-gray-200 py-3 px-4 sticky top-0 z-10 shadow-sm">
         <div className="max-w-screen-md mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <Link href="./" className="mr-4" onClick={() => setActiveTab('home')}>
+            <Link href="./" className="mr-4 hover:bg-gray-100 p-2 rounded-full transition">
               <ChevronLeft className="h-6 w-6 text-gray-800" />
             </Link>
-            <h1 className="text-xl font-semibold">
-              {mode === 'camera' ? 'カメラ' : mode === 'preview' ? 'プレビュー' : 'フィード'}
+            <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+              {mode === 'camera' ? (
+                <>
+                  <Camera size={20} className="mr-2 text-purple-600" />
+                  カメラ
+                </>
+              ) : mode === 'preview' ? (
+                <>
+                  <Image size={20} className="mr-2 text-indigo-600" />
+                  プレビュー
+                </>
+              ) : (
+                <>
+                  <Image size={20} className="mr-2 text-blue-600" />
+                  フィード
+                </>
+              )}
             </h1>
           </div>
           
           <div className="flex gap-3">
-            <Link href="./" className="flex items-center">
+            <Link href="./" className="flex items-center hover:bg-gray-100 p-2 rounded-full transition">
               <Home className="h-6 w-6 text-gray-800" />
             </Link>
             {mode === 'camera' && isCapturing && (
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className="text-blue-500 flex items-center"
+                className="text-purple-600 flex items-center hover:bg-purple-50 p-2 rounded-full transition action-button"
               >
                 <Settings size={24} />
               </button>
@@ -559,11 +667,11 @@ const CameraPage = () => {
       </header>
       
       {/* メインコンテンツ */}
-      <main className="max-w-screen-md mx-auto">
+      <main className="max-w-screen-md mx-auto px-2">
         {mode === 'camera' && (
-          <div className="relative">
+          <div className="relative mt-2">
             {isCapturing && !capturedImage ? (
-              <div className={`relative ${gradientFilters[gradientFilter]}`}>
+              <div className={`relative ${gradientFilters[gradientFilter]} rounded-2xl overflow-hidden shadow-lg`}>
                 <video 
                   ref={videoRefCallback} 
                   autoPlay 
@@ -578,15 +686,25 @@ const CameraPage = () => {
                     backgroundColor: 'black',
                     aspectRatio: '9/16',
                     maxHeight: '80vh',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
                   }}
                 />
-                <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded-full text-xs">
-                  {facingMode === 'user' ? '内側カメラ' : '外側カメラ'}
+                <div className="absolute top-4 left-4 bg-black bg-opacity-40 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center">
+                  {facingMode === 'user' ? (
+                    <>
+                      <Camera size={12} className="mr-1.5" />
+                      内側カメラ
+                    </>
+                  ) : (
+                    <>
+                      <Camera size={12} className="mr-1.5" />
+                      外側カメラ
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
-              <div className="w-full h-[80vh] bg-black flex flex-col items-center justify-center">
+              <div className="w-full h-[80vh] bg-black bg-opacity-95 flex flex-col items-center justify-center rounded-2xl overflow-hidden shadow-lg">
                 {/* 非表示のビデオ要素（DOM初期化用） */}
                 <video 
                   ref={videoRefCallback}
@@ -597,9 +715,9 @@ const CameraPage = () => {
                 
                 {cameraError ? (
                   <>
-                    <CameraOff size={48} className="text-red-400 mb-2" />
-                    <p className="text-red-400">カメラエラー</p>
-                    <p className="text-gray-400 text-sm text-center max-w-xs mt-2">
+                    <CameraOff size={48} className="text-red-400 mb-3 animate-pulse" />
+                    <p className="text-red-400 font-medium text-lg mb-2">カメラエラー</p>
+                    <p className="text-gray-400 text-sm text-center max-w-xs mt-2 px-6">
                       カメラへのアクセスができませんでした。
                       <br />
                       ブラウザの設定でカメラのアクセスを許可してください。
@@ -607,9 +725,16 @@ const CameraPage = () => {
                   </>
                 ) : (
                   <>
-                    <Camera size={48} className="text-white mb-2" />
-                    <p className="text-white">カメラが起動していません</p>
-                    <p className="text-gray-300 text-sm">「カメラを起動」ボタンをクリックしてください</p>
+                    <Camera size={56} className="text-white mb-4 opacity-80" />
+                    <p className="text-white font-medium text-lg mb-2">カメラが起動していません</p>
+                    <p className="text-gray-300 text-sm mb-6">下のボタンをクリックしてカメラを起動してください</p>
+                    <button 
+                      onClick={startCamera}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium py-3 px-6 rounded-full shadow-lg flex items-center camera-btn"
+                    >
+                      <Camera size={20} className="mr-2" />
+                      カメラを起動
+                    </button>
                   </>
                 )}
               </div>
@@ -617,60 +742,61 @@ const CameraPage = () => {
             <canvas ref={canvasRef} className="hidden" />
             
             {/* カメラ操作ボタン */}
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8">
-              {!isCapturing ? (
+            {isCapturing && (
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8 items-center">
                 <button 
-                  onClick={startCamera} 
-                  className="bg-white text-black p-3 rounded-full shadow-lg"
+                  onClick={switchCamera} 
+                  className="bg-black bg-opacity-60 text-white p-3 rounded-full shadow-lg backdrop-blur-sm camera-btn"
                 >
-                  <Camera size={32} />
+                  <FlipHorizontal size={24} />
                 </button>
-              ) : (
-                <>
-                  <button 
-                    onClick={switchCamera} 
-                    className="bg-black bg-opacity-70 text-white p-3 rounded-full"
-                  >
-                    <FlipHorizontal size={28} />
-                  </button>
-                  <button 
-                    onClick={captureImage} 
-                    className="bg-white border-4 border-gray-300 text-black p-4 rounded-full shadow-lg"
-                  >
-                    <div className="h-12 w-12 rounded-full"></div>
-                  </button>
-                  <button 
-                    onClick={() => setShowFilters(!showFilters)} 
-                    className="bg-black bg-opacity-70 text-white p-3 rounded-full"
-                  >
-                    <Zap size={28} />
-                  </button>
-                </>
-              )}
-            </div>
+                <button 
+                  onClick={captureImage} 
+                  className="relative bg-white p-1 rounded-full shadow-lg camera-btn"
+                >
+                  <div className="h-16 w-16 rounded-full border-4 border-white flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600"></div>
+                  </div>
+                  <div className="absolute inset-0 bg-white bg-opacity-20 rounded-full animate-pulse" style={{ animationDuration: '2s' }}></div>
+                </button>
+                <button 
+                  onClick={() => setShowFilters(!showFilters)} 
+                  className="bg-black bg-opacity-60 text-white p-3 rounded-full shadow-lg backdrop-blur-sm camera-btn"
+                >
+                  <Zap size={24} />
+                </button>
+              </div>
+            )}
           </div>
         )}
         
         {mode === 'preview' && capturedImage && (
-          <div className="relative h-full">
-            <img 
-              ref={photoRef}
-              src={capturedImage} 
-              alt="撮影した写真" 
-              className="w-full max-h-[80vh] object-contain mx-auto"
-            />
+          <div className="relative h-full mt-4 animation-fadeIn">
+            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+              <img 
+                ref={photoRef}
+                src={capturedImage} 
+                alt="撮影した写真" 
+                className="w-full max-h-[75vh] object-contain mx-auto rounded-2xl"
+              />
+              
+              {/* オーバーレイグラデーション */}
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent opacity-60"></div>
+            </div>
             
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8">
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-6">
               <button 
                 onClick={newPhoto} 
-                className="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg"
+                className="bg-white text-red-500 px-6 py-3 rounded-full shadow-lg font-medium camera-btn flex items-center"
               >
+                <RefreshCw size={18} className="mr-2" />
                 撮り直す
               </button>
               <button 
                 onClick={saveImage}
-                className="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg"
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg font-medium camera-btn flex items-center"
               >
+                <Share2 size={18} className="mr-2" />
                 投稿する
               </button>
             </div>
@@ -678,55 +804,55 @@ const CameraPage = () => {
         )}
         
         {mode === 'feed' && (
-          <div className="pb-20">
+          <div className="pb-20 pt-4">
             {feedImages.map((post) => (
-              <div key={post.id} className="bg-white mb-6 border border-gray-200">
+              <div key={post.id} className="bg-white mb-6 border border-gray-200 rounded-xl overflow-hidden shadow-sm feed-post">
                 {/* 投稿ヘッダー */}
-                <div className="flex items-center p-3">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
-                    <div className="h-7 w-7 rounded-full bg-white flex items-center justify-center">
-                      <div className="h-6 w-6 rounded-full bg-gray-300"></div>
+                <div className="flex items-center p-4">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                    <div className="h-9 w-9 rounded-full bg-white flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-gray-200"></div>
                     </div>
                   </div>
                   <span className="ml-3 font-medium">{post.user}</span>
                 </div>
                 
                 {/* 投稿画像 */}
-                <div className="aspect-square overflow-hidden">
-                  <img src={post.url} alt="投稿" className="w-full h-full object-cover" />
+                <div className="aspect-square overflow-hidden bg-black">
+                  <img src={post.url} alt="投稿" className="w-full h-full object-contain" />
                 </div>
                 
                 {/* 投稿アクション */}
-                <div className="p-3">
-                  <div className="flex justify-between mb-2">
-                    <div className="flex gap-4">
-                      <button onClick={() => likePost(post.id)}>
-                        <Heart size={24} className="text-gray-800 hover:text-red-500 transition-colors" />
+                <div className="p-4">
+                  <div className="flex justify-between mb-3">
+                    <div className="flex gap-5">
+                      <button onClick={() => likePost(post.id)} className="action-button">
+                        <Heart size={26} className="text-gray-800 hover:text-red-500 transition-colors" />
                       </button>
-                      <button>
-                        <MessageCircle size={24} className="text-gray-800" />
+                      <button className="action-button">
+                        <MessageCircle size={26} className="text-gray-800" />
                       </button>
-                      <button>
-                      <Share2 size={24} className="text-gray-800" />
+                      <button className="action-button">
+                        <Share2 size={26} className="text-gray-800" />
                       </button>
                     </div>
-                    <button>
-                      <Bookmark size={24} className="text-gray-800" />
+                    <button className="action-button">
+                      <Bookmark size={26} className="text-gray-800" />
                     </button>
                   </div>
                   
                   {/* いいね数 */}
-                  <p className="font-bold mb-1">{post.likes}件のいいね</p>
+                  <p className="font-bold mb-2">{post.likes}件のいいね</p>
                   
                   {/* キャプション */}
-                  <p className="mb-2">
+                  <p className="mb-3">
                     <span className="font-medium mr-2">{post.user}</span>
                     {post.caption}
                   </p>
                   
                   {/* コメント入力 */}
                   <div className="flex items-center border-t border-gray-200 pt-3 mt-3">
-                    <Smile size={24} className="text-gray-400 mr-2" />
+                    <Smile size={24} className="text-gray-400 mr-3" />
                     <input 
                       type="text"
                       placeholder="コメントを追加..."
@@ -743,16 +869,16 @@ const CameraPage = () => {
       
       {/* フィルター設定パネル */}
       {mode === 'camera' && showFilters && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-90 text-white p-4 rounded-t-xl z-20 max-h-[60vh] overflow-y-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 text-white p-4 rounded-t-2xl z-20 max-h-[70vh] overflow-y-auto filter-panel">
           <div className="max-w-screen-md mx-auto">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Settings size={20} />
+                <Settings size={20} className="text-purple-400" />
                 フィルター設定
               </h2>
               <button 
                 onClick={resetFilters}
-                className="text-blue-400 flex items-center gap-1"
+                className="text-purple-400 flex items-center gap-1 hover:text-purple-300 transition"
               >
                 <RefreshCw size={16} />
                 リセット
@@ -761,18 +887,18 @@ const CameraPage = () => {
             
             {/* フィルタープリセット */}
             <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                <Zap size={16} />
+              <h3 className="text-sm font-medium mb-3 flex items-center gap-2 text-gray-300">
+                <Zap size={16} className="text-purple-400" />
                 フィルタープリセット
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {filterPresets.map((preset) => (
                   <button
                     key={preset.name}
                     onClick={() => applyPreset(preset)}
-                    className={`p-2 text-sm rounded border ${selectedPreset === preset.name ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                    className={`p-3 text-sm rounded-lg border ${selectedPreset === preset.name ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                   >
-                    <span className="mr-1">{preset.icon}</span> {preset.name}
+                    <span className="mr-2 text-lg">{preset.icon}</span> {preset.name}
                   </button>
                 ))}
               </div>
@@ -780,60 +906,60 @@ const CameraPage = () => {
             
             {/* グラデーションフィルター */}
             <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                <Layers size={16} />
+              <h3 className="text-sm font-medium mb-3 flex items-center gap-2 text-gray-300">
+                <Layers size={16} className="text-purple-400" />
                 グラデーションフィルター
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button 
                   onClick={() => handleGradientChange('none')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'none' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'none' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   なし
                 </button>
                 <button 
                   onClick={() => handleGradientChange('rainbow')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'rainbow' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'rainbow' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   🌈 レインボー
                 </button>
                 <button 
                   onClick={() => handleGradientChange('sunset')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'sunset' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'sunset' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   🌅 サンセット
                 </button>
                 <button 
                   onClick={() => handleGradientChange('neon')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'neon' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'neon' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   ✨ ネオン
                 </button>
                 <button 
                   onClick={() => handleGradientChange('cool')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'cool' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'cool' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   ❄️ クール
                 </button>
                 <button 
                   onClick={() => handleGradientChange('warm')}
-                  className={`p-2 text-sm rounded border ${gradientFilter === 'warm' ? 'bg-blue-600 border-blue-400' : 'bg-black border-gray-700'}`}
+                  className={`p-3 text-sm rounded-lg border ${gradientFilter === 'warm' ? 'bg-purple-700 border-purple-500' : 'bg-gray-900 border-gray-800'} transition-all`}
                 >
                   🔥 ウォーム
                 </button>
               </div>
             </div>
             
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                <Palette size={16} />
+            <div className="space-y-5">
+              <h3 className="text-sm font-medium mb-3 flex items-center gap-2 text-gray-300">
+                <Palette size={16} className="text-purple-400" />
                 詳細調整
               </h3>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>明るさ</span>
-                  <span>{filters.brightness}%</span>
+                  <span className="text-purple-400">{filters.brightness}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -841,14 +967,14 @@ const CameraPage = () => {
                   max="200" 
                   value={filters.brightness} 
                   onChange={(e) => handleFilterChange('brightness', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>コントラスト</span>
-                  <span>{filters.contrast}%</span>
+                  <span className="text-purple-400">{filters.contrast}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -856,14 +982,14 @@ const CameraPage = () => {
                   max="200" 
                   value={filters.contrast} 
                   onChange={(e) => handleFilterChange('contrast', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>彩度</span>
-                  <span>{filters.saturate}%</span>
+                  <span className="text-purple-400">{filters.saturate}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -871,14 +997,14 @@ const CameraPage = () => {
                   max="200" 
                   value={filters.saturate} 
                   onChange={(e) => handleFilterChange('saturate', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>セピア</span>
-                  <span>{filters.sepia}%</span>
+                  <span className="text-purple-400">{filters.sepia}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -886,14 +1012,14 @@ const CameraPage = () => {
                   max="100" 
                   value={filters.sepia} 
                   onChange={(e) => handleFilterChange('sepia', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>グレースケール</span>
-                  <span>{filters.grayscale}%</span>
+                  <span className="text-purple-400">{filters.grayscale}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -901,14 +1027,14 @@ const CameraPage = () => {
                   max="100" 
                   value={filters.grayscale} 
                   onChange={(e) => handleFilterChange('grayscale', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>ぼかし</span>
-                  <span>{filters.blur}px</span>
+                  <span className="text-purple-400">{filters.blur}px</span>
                 </label>
                 <input 
                   type="range" 
@@ -916,14 +1042,14 @@ const CameraPage = () => {
                   max="10" 
                   value={filters.blur} 
                   onChange={(e) => handleFilterChange('blur', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>色相回転</span>
-                  <span>{filters.hueRotate}°</span>
+                  <span className="text-purple-400">{filters.hueRotate}°</span>
                 </label>
                 <input 
                   type="range" 
@@ -931,14 +1057,14 @@ const CameraPage = () => {
                   max="360" 
                   value={filters.hueRotate} 
                   onChange={(e) => handleFilterChange('hueRotate', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>ネガティブ</span>
-                  <span>{filters.invert}%</span>
+                  <span className="text-purple-400">{filters.invert}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -946,14 +1072,14 @@ const CameraPage = () => {
                   max="100" 
                   value={filters.invert} 
                   onChange={(e) => handleFilterChange('invert', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium flex justify-between">
+                <label className="text-sm font-medium flex justify-between mb-2">
                   <span>不透明度</span>
-                  <span>{filters.opacity}%</span>
+                  <span className="text-purple-400">{filters.opacity}%</span>
                 </label>
                 <input 
                   type="range" 
@@ -961,14 +1087,14 @@ const CameraPage = () => {
                   max="100" 
                   value={filters.opacity} 
                   onChange={(e) => handleFilterChange('opacity', e.target.value)}
-                  className="w-full accent-blue-500"
+                  className="w-full"
                 />
               </div>
             </div>
             
             <button 
               onClick={() => setShowFilters(false)}
-              className="w-full bg-blue-500 text-white py-3 rounded-lg mt-6 font-medium"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg mt-8 font-medium camera-btn"
             >
               完了
             </button>
@@ -978,15 +1104,15 @@ const CameraPage = () => {
       
       {/* フッターナビゲーション（フィードモード時） */}
       {mode === 'feed' && (
-        <footer className="bg-white border-t border-gray-200 py-3 fixed bottom-0 left-0 right-0">
+        <footer className="bg-white border-t border-gray-200 py-3 fixed bottom-0 left-0 right-0 shadow-lg">
           <div className="max-w-screen-md mx-auto flex justify-around">
             <Link href="/" className="flex flex-col items-center text-xs">
-              <Home size={24} className="mb-1" />
-              ホーム
+              <Home size={24} className="mb-1 text-gray-700" />
+              <span className="text-gray-700">ホーム</span>
             </Link>
             <button className="flex flex-col items-center text-xs">
-              <Search size={24} className="mb-1" />
-              検索
+              <Search size={24} className="mb-1 text-gray-700" />
+              <span className="text-gray-700">検索</span>
             </button>
             <button 
               onClick={() => {
@@ -995,18 +1121,20 @@ const CameraPage = () => {
                   startCamera();
                 }, 300);
               }}
-              className="flex flex-col items-center text-xs"
+              className="flex flex-col items-center text-xs relative"
             >
-              <Camera size={24} className="mb-1" />
-              カメラ
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full p-1.5 mb-1">
+                <Camera size={22} className="text-white" />
+              </div>
+              <span className="text-gray-700">カメラ</span>
             </button>
             <button className="flex flex-col items-center text-xs">
-              <Heart size={24} className="mb-1" />
-              通知
+              <Heart size={24} className="mb-1 text-gray-700" />
+              <span className="text-gray-700">通知</span>
             </button>
             <Link href="/profile" className="flex flex-col items-center text-xs">
-              <User size={24} className="mb-1" />
-              プロフィール
+              <User size={24} className="mb-1 text-gray-700" />
+              <span className="text-gray-700">プロフィール</span>
             </Link>
           </div>
         </footer>

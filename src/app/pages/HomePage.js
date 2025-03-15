@@ -87,7 +87,7 @@ const HomePage = () => {
     // スタイル適用のため、div要素はそのままにして、必要なスタイルを追加
     <div className="bg-gray-100" style={{ height: "100vh", overflow: "auto" }}>
       {/* ヘッダー - 固定 */}
-      <div className="sticky top-0 z-10 bg-white border-b w-full">
+      <div className="sticky top-0 z-10 bg-white border-b-gray-300  border-b-[1px] w-full">
         <div className="max-w-screen-md mx-auto p-3 flex items-center justify-between">
           <h2 className="text-xl font-bold">FilterCraft</h2>
           <div className="flex space-x-3">
@@ -102,7 +102,7 @@ const HomePage = () => {
       </div>
       
       {/* フィルターリスト */}
-      <div className="w-full border-b bg-white">
+      <div className="w-full ">
         <div className="max-w-screen-md mx-auto p-3">
           <div className="flex space-x-3 overflow-x-auto pb-2">
             <div className="flex-shrink-0 w-16 flex flex-col items-center">

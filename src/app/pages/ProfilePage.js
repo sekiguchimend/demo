@@ -1,7 +1,8 @@
 // pages/ProfilePage.js
+"use client"
 import React, { useState } from 'react';
-import { User, Sparkles, Plus, Download, Camera, Heart, Share2, Bell, X } from 'lucide-react';
-
+import { User, Sparkles, Plus, Download, Camera, Heart, Share2, Bell, X, Link as Lin } from 'lucide-react';
+import Link from 'next/link';
 const ProfilePage = ({ userFilters = [], onCameraOpen }) => {
   // アクティブタブの状態
   const [activeTab, setActiveTab] = useState('photos');
@@ -38,7 +39,7 @@ const ProfilePage = ({ userFilters = [], onCameraOpen }) => {
   return (
     <div className="bg-gray-100" style={{ height: "100vh", overflow: "auto" }}>
       {/* プロフィールヘッダー */}
-      <div className="bg-white p-4 border-b">
+      <div className="bg-white p-4 border-b-gray-300  border-b-[1px]">
         <div className="max-w-screen-md mx-auto flex items-center">
           <div className="mr-4">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 p-[2px]">
@@ -73,7 +74,9 @@ const ProfilePage = ({ userFilters = [], onCameraOpen }) => {
                 <p className="text-xs text-gray-500">フォロー中</p>
               </div>
             </div>
+            <Link href='./ProfileEditPage'>
             <button className="w-full bg-gray-200 rounded-md py-1 text-sm font-medium">プロフィールを編集</button>
+            </Link>
           </div>
         </div>
         

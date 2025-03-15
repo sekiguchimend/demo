@@ -18,7 +18,7 @@ const ExplorePage = () => {
 
   return (
     <div className="bg-gray-100" style={{ height: "100vh", overflow: "auto" }}>
-      <div className="sticky top-0 z-10 bg-white p-3 border-b w-full">
+      <div className="sticky top-0 z-10 bg-white p-3 border-b-gray-300  border-b-[1px] w-full">
         <div className="max-w-screen-md mx-auto relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={18} className="text-gray-400" />
