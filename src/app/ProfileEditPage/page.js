@@ -3,15 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { User, X, Camera, Save, ArrowLeft, Sparkles, Check, Mail, AtSign, Edit3, Lock, BellRing, Globe } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
-const ProfileEditPage = ({ onClose, initialData = {} }) => {
+const ProfileEditPage = () => {
   // ユーザープロフィールの状態
   const [profile, setProfile] = useState({
-    username: initialData.username || '@your_username',
-    bio: initialData.bio || 'フィルター作成とカメラエフェクトが好きです。オリジナルフィルターを公開中 ✨',
-    displayName: initialData.displayName || 'ユーザー名',
-    email: initialData.email || 'user@example.com',
-    ...initialData
+    username: '@your_username',
+    bio: 'フィルター作成とカメラエフェクトが好きです。オリジナルフィルターを公開中 ✨',
+    displayName: 'ユーザー名',
+    email:  'user@example.com',
   });
+  
+  // 戻るハンドラー
+ 
 
   // アニメーション用の状態
   const [animateIn, setAnimateIn] = useState(false);
