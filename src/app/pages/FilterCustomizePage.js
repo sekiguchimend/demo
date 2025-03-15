@@ -1,10 +1,11 @@
-// pages/FilterCustomizePage.js - プレビュー画像サイズを調整
+// pages/FilterCustomizePage.js - フィルターとエフェクト機能
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   ArrowLeft, Save, Camera, Image, Sparkles, Sliders, 
   RefreshCw, Layers, Palette, Play, Download, Heart, 
   Share2, X, Check, Plus, Home, User, Sunset, Cloud,
-  Moon, Zap, Droplets, Flame, Sun, Snowflake, Search
+  Moon, Zap, Droplets, Flame, Sun, Snowflake, Search,
+  MoreHorizontal, Star, Wand2, Activity, CircleDashed
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,6 +27,7 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
   const [showPresets, setShowPresets] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [gradientOverlay, setGradientOverlay] = useState('none');
+  const [activeTab, setActiveTab] = useState('filter'); // 'filter' または 'effect'
   const [filters, setFilters] = useState({
     brightness: initialFilter?.brightness || 100,
     contrast: initialFilter?.contrast || 100,
@@ -37,8 +39,21 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
     invert: initialFilter?.invert || 0,
     opacity: initialFilter?.opacity || 100,
   });
+  // エフェクトのステート
+  const [effects, setEffects] = useState({
+    vignette: initialFilter?.effects?.vignette || 0,
+    noise: initialFilter?.effects?.noise || 0,
+    sharpen: initialFilter?.effects?.sharpen || 0,
+    filmGrain: initialFilter?.effects?.filmGrain || 0,
+    duotone: initialFilter?.effects?.duotone || 0
+  });
+  const [selectedEffect, setSelectedEffect] = useState(null);
+  // 保存ダイアログのステート
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveTitle, setSaveTitle] = useState('');
 
   const nameInputRef = useRef(null);
+  const saveTitleInputRef = useRef(null);
   
   // 初期フィルターが変更されたとき
   useEffect(() => {
@@ -55,6 +70,15 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
         invert: initialFilter.invert || 0,
         opacity: initialFilter.opacity || 100,
       });
+      if (initialFilter.effects) {
+        setEffects({
+          vignette: initialFilter.effects.vignette || 0,
+          noise: initialFilter.effects.noise || 0,
+          sharpen: initialFilter.effects.sharpen || 0,
+          filmGrain: initialFilter.effects.filmGrain || 0,
+          duotone: initialFilter.effects.duotone || 0
+        });
+      }
     }
   }, [initialFilter]);
   
@@ -91,7 +115,30 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
       values: { brightness: 105, contrast: 110, saturate: 130, sepia: 20, grayscale: 0, blur: 0, hueRotate: 30, invert: 0, opacity: 100 } 
     },
   ];
-  
+
+  // エフェクトプリセット
+  const effectPresets = [
+    { 
+      name: 'ビンテージフィルム', 
+      icon: <Camera size={20} className="text-amber-600" />,
+      values: { vignette: 35, noise: 15, sharpen: 0, filmGrain: 40, duotone: 20 } 
+    },
+    { 
+      name: 'シャープクリア', 
+      icon: <Zap size={20} className="text-blue-500" />,
+      values: { vignette: 10, noise: 0, sharpen: 60, filmGrain: 0, duotone: 0 } 
+    },
+    { 
+      name: '映画風', 
+      icon: <Play size={20} className="text-red-500" />,
+      values: { vignette: 40, noise: 10, sharpen: 20, filmGrain: 30, duotone: 25 } 
+    },
+    { 
+      name: 'ローファイ', 
+      icon: <CircleDashed size={20} className="text-purple-500" />,
+      values: { vignette: 30, noise: 40, sharpen: 0, filmGrain: 60, duotone: 15 } 
+    },
+  ];
   // グラデーションオーバーレイのオプション
   const gradientOptions = [
     { id: 'none', name: 'なし', icon: <X size={18} className="text-gray-500" />, className: '' },
@@ -127,6 +174,15 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
     },
   ];
   
+  // エフェクトの説明
+  const effectDescriptions = {
+    vignette: "画像の周囲を暗くして、中央に注目を集めます",
+    noise: "古い写真のようなノイズを追加します",
+    sharpen: "画像をシャープにして、細部をより鮮明にします",
+    filmGrain: "フィルム写真のような粒状感を追加します",
+    duotone: "二色のカラーパレットで画像に色合いを加えます"
+  };
+  
   // フィルター名編集フォーカス
   useEffect(() => {
     if (isNameEditing && nameInputRef.current) {
@@ -134,13 +190,32 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
     }
   }, [isNameEditing]);
   
+  // 保存ダイアログが表示されたときにフォーカス
+  useEffect(() => {
+    if (showSaveDialog && saveTitleInputRef.current) {
+      saveTitleInputRef.current.focus();
+      // 初期タイトルをフィルター名に設定
+      setSaveTitle(filterName);
+    }
+  }, [showSaveDialog, filterName]);
+  
+  // 保存ダイアログを表示
+  const handleSaveClick = () => {
+    setShowSaveDialog(true);
+  };
+  
   // フィルター保存のシミュレーション
   const handleSaveFilter = () => {
+    // タイトルが空の場合はデフォルト値を使用
+    const finalTitle = saveTitle.trim() || filterName;
+    
     setIsSaving(true);
+    setShowSaveDialog(false);
     
     // フィルターオブジェクトの作成
     const newFilter = {
       name: filterName,
+      title: finalTitle,
       brightness: filters.brightness,
       contrast: filters.contrast,
       saturation: filters.saturate,
@@ -151,6 +226,7 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
       invert: filters.invert,
       opacity: filters.opacity,
       gradientOverlay: gradientOverlay,
+      effects: { ...effects }
     };
     
     // 保存処理のシミュレーション
@@ -181,6 +257,13 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
     setSelectedPreset(preset.name);
     setShowPresets(false);
   };
+
+  // エフェクトプリセットの適用
+  const applyEffectPreset = (preset) => {
+    setEffects(preset.values);
+    setSelectedEffect(preset.name);
+    setShowPresets(false);
+  };
   
   // フィルターパラメータの更新
   const handleFilterChange = (filterName, value) => {
@@ -190,26 +273,54 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
     }));
     setSelectedPreset(null);
   };
+
+  // エフェクトパラメータの更新
+  const handleEffectChange = (effectName, value) => {
+    setEffects(prev => ({
+      ...prev,
+      [effectName]: value
+    }));
+    setSelectedEffect(null);
+  };
   
   // フィルターをリセット
   const resetFilters = () => {
-    setFilters({
-      brightness: 100,
-      contrast: 100,
-      saturate: 100,
-      sepia: 0,
-      grayscale: 0,
-      blur: 0,
-      hueRotate: 0,
-      invert: 0,
-      opacity: 100
-    });
-    setGradientOverlay('none');
-    setSelectedPreset(null);
+    if (activeTab === 'filter') {
+      setFilters({
+        brightness: 100,
+        contrast: 100,
+        saturate: 100,
+        sepia: 0,
+        grayscale: 0,
+        blur: 0,
+        hueRotate: 0,
+        invert: 0,
+        opacity: 100
+      });
+      setGradientOverlay('none');
+      setSelectedPreset(null);
+    } else {
+      setEffects({
+        vignette: 0,
+        noise: 0,
+        sharpen: 0,
+        filmGrain: 0,
+        duotone: 0
+      });
+      setSelectedEffect(null);
+    }
   };
   
   // CSSフィルタースタイルの生成
   const getFilterStyle = () => {
+    // ビネット効果用の追加スタイル
+    const vignetteStyle = effects.vignette > 0 ? {
+      boxShadow: `inset 0 0 ${effects.vignette * 2}px rgba(0,0,0,${effects.vignette / 100 * 0.8})`
+    } : {};
+    
+    // フィルムグレイン用のスタイル
+    const filmGrainClass = effects.filmGrain > 0 ? 'film-grain' : '';
+    
     return {
       filter: `
         brightness(${filters.brightness}%) 
@@ -221,7 +332,13 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
         hue-rotate(${filters.hueRotate}deg)
         invert(${filters.invert}%)
         opacity(${filters.opacity}%)
-      `
+        ${effects.sharpen > 0 ? `contrast(${100 + effects.sharpen * 0.2}%) brightness(${100 + effects.sharpen * 0.1}%)` : ''}
+        ${effects.noise > 0 ? `contrast(${100 + effects.noise * 0.05}%)` : ''}
+        ${effects.duotone > 0 ? `sepia(${effects.duotone * 0.2}%)` : ''}
+      `,
+      ...vignetteStyle,
+      // カスタムフィルター適用時のスタイル
+      className: `${filmGrainClass} ${effects.duotone > 0 ? 'duotone-effect' : ''}`
     };
   };
   
@@ -320,6 +437,43 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
       border-radius: 0.5rem;
     }
     
+    /* フィルムグレイン効果 */
+    .film-grain {
+      position: relative;
+    }
+    
+    .film-grain::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9Ii4xIi8+PC9zdmc+');
+      pointer-events: none;
+      mix-blend-mode: overlay;
+      opacity: 0.8;
+      border-radius: 0.5rem;
+    }
+    
+    /* デュオトーン効果 */
+    .duotone-effect {
+      position: relative;
+    }
+    
+    .duotone-effect::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(42, 27, 161, 0.2), rgba(210, 29, 133, 0.2));
+      pointer-events: none;
+      mix-blend-mode: color;
+      border-radius: 0.5rem;
+    }
+    
     /* カスタムスライダー */
     input[type="range"] {
       -webkit-appearance: none;
@@ -376,8 +530,24 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
+    
+    /* モーダルオーバーレイ */
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+    }
+    
+    /* タブスタイル */
+    .tab-active {
+      color: #8b5cf6;
+      border-bottom: 2px solid #8b5cf6;
+    }
+    
+    .tab-inactive {
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+    }
   `;
-
   return (
     <div className="min-h-screen bg-gray-50 page-bg">
       <style>{styles}</style>
@@ -397,7 +567,7 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
           
           <div>
             <button 
-              onClick={handleSaveFilter}
+              onClick={handleSaveClick}
               disabled={isSaving || saveSuccess}
               className={`px-4 py-2 rounded-full flex items-center font-medium transition-all btn-effect
                 ${saveSuccess 
@@ -463,18 +633,20 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
         {/* プレビュー画像 - サイズを調整 */}
         <div className="mb-6">
           <div className={`relative rounded-xl overflow-hidden shadow-lg mb-3 ${getGradientClass()} mx-auto`} style={{maxWidth: '400px', maxHeight: '400px'}}>
-            <img 
-              src={sampleImages[selectedImageIndex]} 
-              alt="プレビュー画像" 
-              style={{
-                ...getFilterStyle(),
-                width: '100%',
-                height: 'auto',
-                maxHeight: '400px',
-                objectFit: 'cover'
-              }}
-              className="aspect-square"
-            />
+            <div className={`${effects.filmGrain > 0 ? 'film-grain' : ''} ${effects.duotone > 0 ? 'duotone-effect' : ''} h-full w-full`}>
+              <img 
+                src={sampleImages[selectedImageIndex]} 
+                alt="プレビュー画像" 
+                style={{
+                  ...getFilterStyle(),
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '400px',
+                  objectFit: 'cover'
+                }}
+                className="aspect-square"
+              />
+            </div>
             
             {/* フィルタープリセット表示 */}
             {selectedPreset && (
@@ -484,8 +656,16 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
               </div>
             )}
             
+            {/* エフェクトプリセット表示 */}
+            {selectedEffect && (
+              <div className="absolute top-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center">
+                {effectPresets.find(p => p.name === selectedEffect)?.icon}
+                <span className="ml-1">{selectedEffect}</span>
+              </div>
+            )}
+            
             {/* グラデーションオーバーレイの名前表示 */}
-            {gradientOverlay !== 'none' && (
+            {gradientOverlay !== 'none' && !selectedEffect && (
               <div className="absolute top-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center">
                 {gradientOptions.find(opt => opt.id === gradientOverlay)?.icon}
                 <span className="ml-1">{gradientOptions.find(opt => opt.id === gradientOverlay)?.name}</span>
@@ -511,6 +691,28 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
           </div>
         </div>
         
+        {/* タブ切り替え */}
+        <div className="flex mb-6 border-b border-gray-200">
+          <button 
+            onClick={() => setActiveTab('filter')}
+            className={`flex-1 py-3 px-4 text-center font-medium transition-all ${activeTab === 'filter' ? 'tab-active' : 'tab-inactive'}`}
+          >
+            <div className="flex items-center justify-center">
+              <Sliders size={18} className="mr-2" />
+              フィルター
+            </div>
+          </button>
+          <button 
+            onClick={() => setActiveTab('effect')}
+            className={`flex-1 py-3 px-4 text-center font-medium transition-all ${activeTab === 'effect' ? 'tab-active' : 'tab-inactive'}`}
+          >
+            <div className="flex items-center justify-center">
+              <Wand2 size={18} className="mr-2" />
+              エフェクト
+            </div>
+          </button>
+        </div>
+        
         {/* プリセット選択ボタン */}
         <div className="mb-6 flex justify-between">
           <button 
@@ -518,7 +720,7 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
             className="bg-white shadow-sm border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 font-medium flex items-center btn-effect"
           >
             <Sparkles size={18} className="mr-2 text-purple-500" />
-            プリセットを使用
+            {activeTab === 'filter' ? 'プリセットを使用' : 'エフェクトプリセット'}
           </button>
           
           <button
@@ -531,7 +733,7 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
         </div>
         
         {/* プリセットセレクター（表示・非表示切り替え） */}
-        {showPresets && (
+        {showPresets && activeTab === 'filter' && (
           <div className="bg-white rounded-xl shadow-lg p-4 mb-6 border border-gray-100 animate-fadeIn">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-medium text-gray-800 flex items-center">
@@ -560,103 +762,241 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
           </div>
         )}
         
-        {/* グラデーションオーバーレイセレクター */}
-        <div className="mb-6">
-          <h3 className="font-medium text-gray-800 mb-3 flex items-center">
-            <Layers size={16} className="mr-2 text-purple-500" />
-            グラデーションオーバーレイ
-          </h3>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {gradientOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setGradientOverlay(option.id)}
-                className={`p-3 text-sm rounded-lg border transition flex items-center justify-center
-                  ${gradientOverlay === option.id 
-                    ? 'bg-purple-50 border-purple-200 text-purple-700' 
-                    : 'bg-gray-50 border-gray-200 hover:bg-purple-50 hover:border-purple-200'}`}
-              >
-                <span className="mr-2">{option.icon}</span> {option.name}
+        {/* エフェクトプリセットセレクター */}
+        {showPresets && activeTab === 'effect' && (
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6 border border-gray-100 animate-fadeIn">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-medium text-gray-800 flex items-center">
+                <Wand2 size={16} className="mr-2 text-purple-500" />
+                エフェクトプリセット
+              </h3>
+              <button onClick={() => setShowPresets(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
               </button>
-            ))}
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+              {effectPresets.map((preset) => (
+                <button
+                  key={preset.name}
+                  onClick={() => applyEffectPreset(preset)}
+                  className={`p-3 text-sm rounded-lg border transition flex items-center
+                    ${selectedEffect === preset.name 
+                      ? 'bg-purple-50 border-purple-200 text-purple-700' 
+                      : 'bg-gray-50 border-gray-200 hover:bg-purple-50 hover:border-purple-200'}`}
+                >
+                  <span className="mr-2">{preset.icon}</span> {preset.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         
-        {/* 詳細調整スライダー */}
-        <div className="bg-white rounded-xl shadow-lg p-5 mb-6 border border-gray-100">
-          <h3 className="font-medium text-gray-800 mb-4 flex items-center">
-            <Palette size={16} className="mr-2 text-purple-500" />
-            詳細調整
-          </h3>
-          
-          <div className="space-y-5">
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">明るさ</label>
-                <span className="text-sm font-medium text-purple-600">{filters.brightness}%</span>
+        {/* フィルター設定 */}
+        {activeTab === 'filter' && (
+          <>
+            {/* グラデーションオーバーレイセレクター */}
+            <div className="mb-6">
+              <h3 className="font-medium text-gray-800 mb-3 flex items-center">
+                <Layers size={16} className="mr-2 text-purple-500" />
+                グラデーションオーバーレイ
+              </h3>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {gradientOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setGradientOverlay(option.id)}
+                    className={`p-3 text-sm rounded-lg border transition flex items-center justify-center
+                      ${gradientOverlay === option.id 
+                        ? 'bg-purple-50 border-purple-200 text-purple-700' 
+                        : 'bg-gray-50 border-gray-200 hover:bg-purple-50 hover:border-purple-200'}`}
+                  >
+                    <span className="mr-2">{option.icon}</span> {option.name}
+                  </button>
+                ))}
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="200" 
-                value={filters.brightness} 
-                onChange={(e) => handleFilterChange('brightness', e.target.value)}
-                className="w-full"
-              />
             </div>
             
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">コントラスト</label>
-                <span className="text-sm font-medium text-purple-600">{filters.contrast}%</span>
+            {/* 詳細調整スライダー */}
+            <div className="bg-white rounded-xl shadow-lg p-5 mb-6 border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+                <Palette size={16} className="mr-2 text-purple-500" />
+                フィルター調整
+              </h3>
+              
+              <div className="space-y-5">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700">明るさ</label>
+                    <span className="text-sm font-medium text-purple-600">{filters.brightness}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="200" 
+                    value={filters.brightness} 
+                    onChange={(e) => handleFilterChange('brightness', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700">コントラスト</label>
+                    <span className="text-sm font-medium text-purple-600">{filters.contrast}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="200" 
+                    value={filters.contrast} 
+                    onChange={(e) => handleFilterChange('contrast', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700">彩度</label>
+                    <span className="text-sm font-medium text-purple-600">{filters.saturate}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="200" 
+                    value={filters.saturate} 
+                    onChange={(e) => handleFilterChange('saturate', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700">セピア</label>
+                    <span className="text-sm font-medium text-purple-600">{filters.sepia}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={filters.sepia} 
+                    onChange={(e) => handleFilterChange('sepia', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <button 
+                  className="text-purple-600 text-sm font-medium flex items-center mt-2"
+                  onClick={() => setActiveTab('effect')}
+                >
+                  <Wand2 size={16} className="mr-1" />
+                  エフェクトを編集する
+                </button>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="200" 
-                value={filters.contrast} 
-                onChange={(e) => handleFilterChange('contrast', e.target.value)}
-                className="w-full"
-              />
             </div>
+          </>
+        )}
+        
+        {/* エフェクト設定 */}
+        {activeTab === 'effect' && (
+          <div className="bg-white rounded-xl shadow-lg p-5 mb-6 border border-gray-100">
+            <h3 className="font-medium text-gray-800 mb-4 flex items-center">
+              <Wand2 size={16} className="mr-2 text-purple-500" />
+              エフェクト調整
+            </h3>
             
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">彩度</label>
-                <span className="text-sm font-medium text-purple-600">{filters.saturate}%</span>
+            <div className="space-y-5">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-gray-700">ビネット効果</label>
+                  <span className="text-sm font-medium text-purple-600">{effects.vignette}%</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{effectDescriptions.vignette}</p>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={effects.vignette} 
+                  onChange={(e) => handleEffectChange('vignette', e.target.value)}
+                  className="w-full"
+                />
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="200" 
-                value={filters.saturate} 
-                onChange={(e) => handleFilterChange('saturate', e.target.value)}
-                className="w-full"
-              />
-            </div>
-            
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">セピア</label>
-                <span className="text-sm font-medium text-purple-600">{filters.sepia}%</span>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-gray-700">ノイズ</label>
+                  <span className="text-sm font-medium text-purple-600">{effects.noise}%</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{effectDescriptions.noise}</p>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={effects.noise} 
+                  onChange={(e) => handleEffectChange('noise', e.target.value)}
+                  className="w-full"
+                />
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                value={filters.sepia} 
-                onChange={(e) => handleFilterChange('sepia', e.target.value)}
-                className="w-full"
-              />
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-gray-700">シャープネス</label>
+                  <span className="text-sm font-medium text-purple-600">{effects.sharpen}%</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{effectDescriptions.sharpen}</p>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={effects.sharpen} 
+                  onChange={(e) => handleEffectChange('sharpen', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-gray-700">フィルムグレイン</label>
+                  <span className="text-sm font-medium text-purple-600">{effects.filmGrain}%</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{effectDescriptions.filmGrain}</p>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={effects.filmGrain} 
+                  onChange={(e) => handleEffectChange('filmGrain', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-gray-700">デュオトーン</label>
+                  <span className="text-sm font-medium text-purple-600">{effects.duotone}%</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{effectDescriptions.duotone}</p>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={effects.duotone} 
+                  onChange={(e) => handleEffectChange('duotone', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              <button 
+                className="text-purple-600 text-sm font-medium flex items-center mt-2"
+                onClick={() => setActiveTab('filter')}
+              >
+                <Sliders size={16} className="mr-1" />
+                フィルターを編集する
+              </button>
             </div>
-            
-            <button className="text-purple-600 text-sm font-medium flex items-center mt-2">
-              <Plus size={16} className="mr-1" />
-              すべてのオプションを表示
-            </button>
           </div>
-        </div>
+        )}
         
         {/* 人気のフィルター */}
         <div className="mb-6">
@@ -700,6 +1040,59 @@ const FilterCustomizePage = ({ initialFilter = null, onSave, onBack }) => {
           <div className="bg-green-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center">
             <Check size={18} className="mr-2" />
             フィルターを保存しました
+          </div>
+        </div>
+      )}
+      
+      {/* 保存ダイアログ - タイトル入力機能 */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+          <div className="bg-white rounded-lg shadow-xl p-5 w-full max-w-md animate-fadeIn">
+            <div className="mb-4 flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <Save size={18} className="mr-2 text-purple-600" />
+                フィルターを保存
+              </h3>
+              <button 
+                onClick={() => setShowSaveDialog(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                タイトルを入力してください
+              </label>
+              <input
+                ref={saveTitleInputRef}
+                type="text"
+                value={saveTitle}
+                onChange={(e) => setSaveTitle(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none"
+                placeholder="例: 夏の思い出フィルター"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                タイトルを入力せずに保存すると、フィルター名「{filterName}」が使用されます
+              </p>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowSaveDialog(false)}
+                className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleSaveFilter}
+                className="flex-1 py-2 bg-purple-600 rounded-lg text-white font-medium hover:bg-purple-700 flex items-center justify-center"
+              >
+                <Save size={18} className="mr-2" />
+                保存する
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,12 @@
-// pages/CameraPage.js - 洗練されたデザイン
+// pages/CameraPage.js - メインコンポーネント
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Settings, RefreshCw, Image, Zap, Layers, Palette, FlipHorizontal, CameraOff, ChevronLeft, Heart, MessageCircle, Share2, Bookmark, Smile, Home, Search } from 'lucide-react';
+import { Camera, Settings, RefreshCw, Image, Zap, Layers, Palette, FlipHorizontal, 
+  CameraOff, ChevronLeft, Heart, MessageCircle, Share2, Bookmark, Smile, 
+  Home, Search, User, X, Instagram, Facebook, Twitter, Mail, Link as LinkIcon, 
+  Copy, Clock, Users, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import CameraControls from './CameraControls';
+import ShareModal from './ShareModal';
 
 const CameraPage = () => {
   // ステート変数
@@ -13,6 +18,11 @@ const CameraPage = () => {
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [gradientFilter, setGradientFilter] = useState('none');
   const [showFilters, setShowFilters] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [groupModeActive, setGroupModeActive] = useState(false);
+  const [timerValue, setTimerValue] = useState(3); // デフォルト3秒
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const [filters, setFilters] = useState({
     brightness: 100,
     contrast: 100,
@@ -38,6 +48,7 @@ const CameraPage = () => {
   // refs
   const canvasRef = useRef(null);
   const photoRef = useRef(null);
+  const timerRef = useRef(null);
   
   // videoRefコールバック - 要素がDOMに追加されたときに実行
   const videoRefCallback = (element) => {
@@ -98,6 +109,11 @@ const CameraPage = () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      
+      // タイマーがあれば停止
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, [stream]);
   
@@ -125,6 +141,25 @@ const CameraPage = () => {
       isMounted = false;
     };
   }, [videoElement, mode]);
+
+  // タイマーカウントダウンの監視
+  useEffect(() => {
+    if (timerRunning && countdown > 0) {
+      timerRef.current = setTimeout(() => {
+        setCountdown(prevCount => prevCount - 1);
+      }, 1000);
+      
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+      };
+    } else if (timerRunning && countdown === 0) {
+      // カウントダウン終了時に撮影
+      captureImage();
+      setTimerRunning(false);
+    }
+  }, [timerRunning, countdown]);
 
   // カメラの起動
   const startCamera = async () => {
@@ -235,6 +270,20 @@ const CameraPage = () => {
     setTimeout(() => {
       startCamera();
     }, 300);
+  };
+
+  // タイマー付き撮影の開始
+  const startTimerCapture = () => {
+    setCountdown(timerValue);
+    setTimerRunning(true);
+  };
+
+  // タイマーのキャンセル
+  const cancelTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setTimerRunning(false);
   };
 
   // 写真を撮る
@@ -447,6 +496,16 @@ const CameraPage = () => {
     stopCamera();
   };
   
+  // シェアモーダルを開く
+  const openShareModal = () => {
+    setShowShareModal(true);
+  };
+
+  // シェアモーダルを閉じる
+  const closeShareModal = () => {
+    setShowShareModal(false);
+  };
+  
   // 投稿のいいね操作
   const likePost = (id) => {
     setFeedImages(prev => 
@@ -454,6 +513,29 @@ const CameraPage = () => {
         post.id === id ? {...post, likes: post.likes + 1} : post
       )
     );
+  };
+
+  // グループモードの切り替え
+  const toggleGroupMode = () => {
+    setGroupModeActive(!groupModeActive);
+  };
+
+  // タイマー値の変更
+  const handleTimerChange = (value) => {
+    setTimerValue(value);
+  };
+  
+  // タイマーのCSSスタイル
+  const timerBoxStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    fontSize: '10rem',
+    fontWeight: 'bold',
+    color: 'white',
+    textShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+    zIndex: 20
   };
 
   // グラデーションフィルターのCSSスタイル
@@ -478,6 +560,12 @@ const CameraPage = () => {
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes timerPulse {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
     
     /* 改良されたグラデーションフィルター */
@@ -617,6 +705,52 @@ const CameraPage = () => {
     .action-button:active {
       transform: scale(0.95);
     }
+
+    /* シェアモーダルのスタイル */
+    .share-modal-overlay {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .share-modal {
+      animation: slideUp 0.4s ease-out;
+    }
+    
+    .share-icon {
+      transition: all 0.2s ease;
+    }
+    
+    .share-icon:hover {
+      transform: translateY(-3px);
+    }
+    
+    /* グループ撮影モードのスタイル */
+    .timer-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 12rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0,0, 0), 0.5);
+      animation: timerPulse 1s infinite;
+      backdrop-filter: blur(2px);
+      z-index: 30;
+    }
+    
+    .timer-number {
+      animation: pulse 1s infinite;
+    }
+    
+    .timer-settings {
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .group-mode-active {
+      box-shadow: 0 0 0 2px #6366f1, 0 0 0 4px rgba(99, 102, 241, 0.3);
+      transform: scale(1.05);
+    }
   `;
 
   return (
@@ -634,7 +768,7 @@ const CameraPage = () => {
               {mode === 'camera' ? (
                 <>
                   <Camera size={20} className="mr-2 text-purple-600" />
-                  カメラ
+                  カメラ {groupModeActive && '(グループモード)'}
                 </>
               ) : mode === 'preview' ? (
                 <>
@@ -651,6 +785,14 @@ const CameraPage = () => {
           </div>
           
           <div className="flex gap-3">
+            {mode === 'camera' && isCapturing && (
+              <button 
+                onClick={toggleGroupMode}
+                className={`text-purple-600 flex items-center hover:bg-purple-50 p-2 rounded-full transition action-button ${groupModeActive ? 'group-mode-active' : ''}`}
+              >
+                <Users size={24} />
+              </button>
+            )}
             <Link href="./" className="flex items-center hover:bg-gray-100 p-2 rounded-full transition">
               <Home className="h-6 w-6 text-gray-800" />
             </Link>
@@ -702,6 +844,21 @@ const CameraPage = () => {
                     </>
                   )}
                 </div>
+                
+                {/* グループモード表示 */}
+                {groupModeActive && (
+                  <div className="absolute top-4 right-4 bg-indigo-600 bg-opacity-90 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center">
+                    <Users size={12} className="mr-1.5" />
+                    グループモード
+                  </div>
+                )}
+                
+                {/* タイマーカウントダウン表示 */}
+                {timerRunning && countdown > 0 && (
+                  <div style={timerBoxStyle} className="timer-number">
+                    {countdown}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="w-full h-[80vh] bg-black bg-opacity-95 flex flex-col items-center justify-center rounded-2xl overflow-hidden shadow-lg">
@@ -742,7 +899,7 @@ const CameraPage = () => {
             <canvas ref={canvasRef} className="hidden" />
             
             {/* カメラ操作ボタン */}
-            {isCapturing && (
+            {isCapturing && !timerRunning && (
               <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-8 items-center">
                 <button 
                   onClick={switchCamera} 
@@ -750,21 +907,82 @@ const CameraPage = () => {
                 >
                   <FlipHorizontal size={24} />
                 </button>
-                <button 
-                  onClick={captureImage} 
-                  className="relative bg-white p-1 rounded-full shadow-lg camera-btn"
-                >
-                  <div className="h-16 w-16 rounded-full border-4 border-white flex items-center justify-center">
-                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600"></div>
-                  </div>
-                  <div className="absolute inset-0 bg-white bg-opacity-20 rounded-full animate-pulse" style={{ animationDuration: '2s' }}></div>
-                </button>
+                
+                {/* 通常モードの撮影ボタン */}
+                {!groupModeActive && (
+                  <button 
+                    onClick={captureImage} 
+                    className="relative bg-white p-1 rounded-full shadow-lg camera-btn"
+                  >
+                    <div className="h-16 w-16 rounded-full border-4 border-white flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600"></div>
+                    </div>
+                    <div className="absolute inset-0 bg-white bg-opacity-20 rounded-full animate-pulse" style={{ animationDuration: '2s' }}></div>
+                  </button>
+                )}
+                
+                {/* グループモードの撮影ボタン */}
+                {groupModeActive && (
+                  <button 
+                    onClick={startTimerCapture} 
+                    className="relative bg-white p-1 rounded-full shadow-lg camera-btn"
+                  >
+                    <div className="h-16 w-16 rounded-full border-4 border-white flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                        <Clock size={30} className="text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-white bg-opacity-20 rounded-full animate-pulse" style={{ animationDuration: '2s' }}></div>
+                  </button>
+                )}
+                
                 <button 
                   onClick={() => setShowFilters(!showFilters)} 
                   className="bg-black bg-opacity-60 text-white p-3 rounded-full shadow-lg backdrop-blur-sm camera-btn"
                 >
                   <Zap size={24} />
                 </button>
+              </div>
+            )}
+            
+            {/* タイマーカウントダウン中のキャンセルボタン */}
+            {timerRunning && (
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+                <button 
+                  onClick={cancelTimer} 
+                  className="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg font-medium camera-btn flex items-center"
+                >
+                  <X size={18} className="mr-2" />
+                  キャンセル
+                </button>
+              </div>
+            )}
+            
+            {/* グループモード設定パネル */}
+            {groupModeActive && !timerRunning && (
+              <div className="fixed bottom-24 left-0 right-0 bg-black bg-opacity-75 text-white p-4 rounded-xl z-20 mx-auto max-w-sm timer-settings">
+                <h3 className="text-center text-lg font-medium mb-4 flex items-center justify-center">
+                  <Clock size={18} className="mr-2 text-indigo-400" />
+                  タイマー設定
+                </h3>
+                
+                <div className="flex justify-center space-x-4 mb-4">
+                  {[3, 5, 10].map((seconds) => (
+                    <button
+                      key={seconds}
+                      onClick={() => handleTimerChange(seconds)}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                        timerValue === seconds ? 'bg-indigo-600' : 'bg-gray-800'
+                      } transition-all`}
+                    >
+                      {seconds}秒
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="text-center text-sm text-gray-300 mb-1">
+                  カウントダウン後に自動的に撮影します
+                </div>
               </div>
             )}
           </div>
@@ -793,11 +1011,11 @@ const CameraPage = () => {
                 撮り直す
               </button>
               <button 
-                onClick={saveImage}
+                onClick={openShareModal}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg font-medium camera-btn flex items-center"
               >
                 <Share2 size={18} className="mr-2" />
-                投稿する
+                シェアする
               </button>
             </div>
           </div>
@@ -832,7 +1050,7 @@ const CameraPage = () => {
                       <button className="action-button">
                         <MessageCircle size={26} className="text-gray-800" />
                       </button>
-                      <button className="action-button">
+                      <button onClick={openShareModal} className="action-button">
                         <Share2 size={26} className="text-gray-800" />
                       </button>
                     </div>
@@ -866,7 +1084,7 @@ const CameraPage = () => {
           </div>
         )}
       </main>
-      
+
       {/* フィルター設定パネル */}
       {mode === 'camera' && showFilters && (
         <div className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 text-white p-4 rounded-t-2xl z-20 max-h-[70vh] overflow-y-auto filter-panel">
@@ -1101,7 +1319,95 @@ const CameraPage = () => {
           </div>
         </div>
       )}
-      
+
+      {/* シェアモーダル - 実際の機能なしのデモ */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30 share-modal-overlay">
+          <div className="bg-white rounded-2xl max-w-md w-full mx-4 shadow-lg share-modal">
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-gray-800">写真をシェア</h3>
+                <button 
+                  onClick={closeShareModal}
+                  className="text-gray-400 hover:text-gray-600 transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <p className="text-gray-600 mb-6">SNSやその他のプラットフォームで写真をシェアしましょう</p>
+              
+              <div className="grid grid-cols-4 gap-4 mb-8">
+                <button className="flex flex-col items-center p-3 hover:bg-blue-50 rounded-lg transition share-icon">
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mb-2">
+                    <Facebook size={24} className="text-white" />
+                  </div>
+                  <span className="text-xs text-gray-600">Facebook</span>
+                </button>
+                
+                <button className="flex flex-col items-center p-3 hover:bg-pink-50 rounded-lg transition share-icon">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-2">
+                    <Instagram size={24} className="text-white" />
+                  </div>
+                  <span className="text-xs text-gray-600">Instagram</span>
+                </button>
+                
+                <button className="flex flex-col items-center p-3 hover:bg-blue-50 rounded-lg transition share-icon">
+                  <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center mb-2">
+                    <Twitter size={24} className="text-white" />
+                  </div>
+                  <span className="text-xs text-gray-600">Twitter</span>
+                </button>
+                
+                <button className="flex flex-col items-center p-3 hover:bg-orange-50 rounded-lg transition share-icon">
+                  <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center mb-2">
+                    <Mail size={24} className="text-white" />
+                  </div>
+                  <span className="text-xs text-gray-600">メール</span>
+                </button>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-xl mb-6">
+                <p className="text-gray-500 text-sm mb-3">リンクをコピー</p>
+                <div className="flex">
+                  <div className="bg-white border border-gray-200 rounded-l-lg py-2 px-3 flex-1 text-gray-500 text-sm">
+                    https://mycamera.app/share/XYZ123
+                  </div>
+                  <button className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-r-lg flex items-center">
+                    <Copy size={18} />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="text-center text-gray-400 my-4">
+                <p>※ デモ用のみ - 実際には共有されません</p>
+              </div>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    closeShareModal();
+                    alert('シェア完了！(デモ用)');
+                    newPhoto();
+                  }}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-6 rounded-lg shadow camera-btn"
+                >
+                  シェアする (デモ)
+                </button>
+                <button 
+                  onClick={closeShareModal}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg camera-btn"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* フッターナビゲーション（フィードモード時） */}
       {mode === 'feed' && (
         <footer className="bg-white border-t border-gray-200 py-3 fixed bottom-0 left-0 right-0 shadow-lg">

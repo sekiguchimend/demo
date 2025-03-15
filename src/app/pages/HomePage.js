@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Sparkles, Heart, MessageCircle, Share2, Bookmark, Plus, User, Image, Zap, Flame, Sun, Moon, Droplets, Filter } from 'lucide-react';
+import { Search, Bell, Sparkles, Heart, MessageCircle, Share2, Bookmark, Plus, User, Image, Zap, Flame, Sun, Moon, Droplets, Filter, Send } from 'lucide-react';
 
 const HomePage = () => {
   // ステート
@@ -11,6 +11,10 @@ const HomePage = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationText, setNotificationText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  // コメント関連のステート
+  const [expandedComments, setExpandedComments] = useState({});
+  const [commentInputs, setCommentInputs] = useState({});
+  const [comments, setComments] = useState({});
   
   // ページ読み込みアニメーション
   useEffect(() => {
@@ -19,6 +23,31 @@ const HomePage = () => {
     }, 1500);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // 初期コメントデータのロード
+  useEffect(() => {
+    // 初期コメントデータをセット
+    const initialComments = {
+      1: [
+        { id: 1, user: "@creative_fan", userName: "ハルカ", avatar: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=70&h=70&auto=format&fit=crop&q=80", text: "このフィルターすごくいい感じ！使ってみたい！", timeAgo: "45分前" },
+        { id: 2, user: "@photo_newbie", userName: "ソウタ", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=70&h=70&auto=format&fit=crop&q=80", text: "光の当たり方が絶妙ですね✨", timeAgo: "30分前" }
+      ],
+      2: [
+        { id: 1, user: "@rain_walker", userName: "アイコ", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=70&h=70&auto=format&fit=crop&q=80", text: "雨の日フィルター使ってみました！本当に雰囲気出てすごい🌧", timeAgo: "2時間前" },
+        { id: 2, user: "@city_explorer", userName: "レン", avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=70&h=70&auto=format&fit=crop&q=80", text: "青みがかった色合いが好きです。フィルターの調整具合を教えてもらえますか？", timeAgo: "1時間前" },
+        { id: 3, user: "@filter_master", userName: "マイカ", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=70&h=70&auto=format&fit=crop&q=80", text: "コントラスト110%、彩度90%、色相190度に設定してます！詳細はプロフィールのリンクから見てください💙", timeAgo: "30分前" }
+      ],
+      3: [
+        { id: 1, user: "@architecture_love", userName: "ケイト", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=70&h=70&auto=format&fit=crop&q=80", text: "モノクロームでこの建物の質感がより際立ってますね！素晴らしい一枚です📸", timeAgo: "3時間前" }
+      ],
+      4: [
+        { id: 1, user: "@nature_child", userName: "ミキ", avatar: "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=70&h=70&auto=format&fit=crop&q=80", text: "夕焼けの色がとても美しいです！このフィルターほしい！", timeAgo: "6時間前" },
+        { id: 2, user: "@travel_pics", userName: "ダイキ", avatar: "https://images.unsplash.com/photo-1503443207922-dff7d543fd0e?w=70&h=70&auto=format&fit=crop&q=80", text: "旅行写真にピッタリですね。私も試してみます✈️", timeAgo: "4時間前" }
+      ]
+    };
+    
+    setComments(initialComments);
   }, []);
 
   // フォーマット用のヘルパー関数
@@ -65,6 +94,50 @@ const HomePage = () => {
     setTimeout(() => {
       setShowNotification(false);
     }, 3000);
+  };
+
+  // コメントの表示/非表示を切り替え
+  const toggleComments = (postId) => {
+    setExpandedComments(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  // コメント入力の更新
+  const handleCommentInput = (postId, text) => {
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: text
+    }));
+  };
+
+  // コメントを投稿
+  const postComment = (postId) => {
+    const commentText = commentInputs[postId];
+    if (!commentText || commentText.trim() === '') return;
+
+    const newComment = {
+      id: (comments[postId]?.length || 0) + 1,
+      user: "@your_username",
+      userName: "あなた",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=70&h=70&auto=format&fit=crop&q=80",
+      text: commentText,
+      timeAgo: "たった今"
+    };
+
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment]
+    }));
+
+    // 入力をクリア
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: ""
+    }));
+
+    displayNotification('コメントを投稿しました');
   };
   
   // 人気のフィルター一覧
@@ -192,7 +265,6 @@ const HomePage = () => {
     "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=100&h=100&auto=format&fit=crop&q=60",
     "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=100&h=100&auto=format&fit=crop&q=60"
   ];
-
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* ローディングオーバーレイ */}
@@ -210,7 +282,7 @@ const HomePage = () => {
           <p className="text-gray-500 mt-2 text-sm">インスピレーションを発見中...</p>
         </div>
       )}
-
+  
       {/* フィルタープレビューモーダル */}
       {showFilterPreview && previewFilter && (
         <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
@@ -276,7 +348,7 @@ const HomePage = () => {
           </div>
         </div>
       )}
-
+  
       {/* 通知トースト */}
       {showNotification && (
         <div className="fixed bottom-20 left-0 right-0 flex justify-center items-center z-50 animate-fadeIn">
@@ -407,7 +479,10 @@ const HomePage = () => {
                   >
                     <Heart size={22} fill={likedPosts.includes(post.id) ? "currentColor" : "none"} />
                   </button>
-                  <button className="flex items-center text-gray-700 transform transition-transform active:scale-90">
+                  <button 
+                    className={`flex items-center transform transition-transform active:scale-90 ${expandedComments[post.id] ? 'text-purple-500' : 'text-gray-700'}`}
+                    onClick={() => toggleComments(post.id)}
+                  >
                     <MessageCircle size={22} />
                   </button>
                   <button className="flex items-center text-gray-700 transform transition-transform active:scale-90">
@@ -426,13 +501,72 @@ const HomePage = () => {
               <p className="text-sm mb-1">
                 <span className="font-semibold">{post.userName}</span> {post.caption}
               </p>
-              <p className="text-xs text-gray-500 mt-2 cursor-pointer hover:text-gray-700">コメント{post.comments}件をすべて見る</p>
+              <button 
+                className="text-xs text-gray-500 mt-2 hover:text-gray-700"
+                onClick={() => toggleComments(post.id)}
+              >
+                コメント{comments[post.id]?.length || 0}件{expandedComments[post.id] ? 'を隠す' : 'をすべて見る'}
+              </button>
               <p className="text-xs text-gray-400 mt-2">{post.timeAgo}</p>
+  
+              {/* コメントセクション */}
+              {expandedComments[post.id] && (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  {/* コメント一覧 */}
+                  <div className="space-y-3 mb-3">
+                    {comments[post.id]?.map((comment) => (
+                      <div key={comment.id} className="flex items-start">
+                        <div className="w-8 h-8 rounded-full overflow-hidden mr-2 flex-shrink-0">
+                          <img 
+                            src={comment.avatar} 
+                            alt={comment.user}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex items-baseline">
+                            <p className="text-sm font-medium">{comment.userName}</p>
+                            <p className="text-xs text-gray-500 ml-1">{comment.user}</p>
+                          </div>
+                          <p className="text-sm">{comment.text}</p>
+                          <p className="text-xs text-gray-400 mt-1">{comment.timeAgo}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* コメント入力フォーム */}
+                  <div className="flex items-center mt-3 bg-gray-50 rounded-full p-1 pr-3">
+                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                      <img 
+                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=70&h=70&auto=format&fit=crop&q=80" 
+                        alt="あなたのアイコン"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <input 
+                      type="text"
+                      value={commentInputs[post.id] || ''}
+                      onChange={(e) => handleCommentInput(post.id, e.target.value)}
+                      className="flex-1 bg-transparent text-sm focus:outline-none py-2"
+                      placeholder="コメントを追加..."
+                      onKeyPress={(e) => e.key === 'Enter' && postComment(post.id)}
+                    />
+                    <button 
+                      onClick={() => postComment(post.id)}
+                      className={`ml-2 text-purple-600 ${!commentInputs[post.id] ? 'opacity-50 cursor-not-allowed' : 'hover:text-purple-700'}`}
+                      disabled={!commentInputs[post.id]}
+                    >
+                      <Send size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
-
+  
       {/* スタイル */}
       <style jsx global>{`
         @keyframes fadeIn {
@@ -443,12 +577,12 @@ const HomePage = () => {
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
-
+  
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-
+  
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -456,5 +590,4 @@ const HomePage = () => {
     </div>
   );
 };
-
 export default HomePage;
